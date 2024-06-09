@@ -45,7 +45,7 @@ public class UserController {
         User res = userMapper.selectOne(Wrappers.<User>lambdaQuery().eq(User::getUsername,user.getUsername()).eq(User::getPassword,user.getPassword()));
         if(res == null)
         {
-            return Result.error("-1","用户名或密码错误");
+            return Result.error("-1","Wrong username or password");
         }
         LoginUser loginuser = new LoginUser();
         loginuser.addVisitCount();

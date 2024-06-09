@@ -10,6 +10,7 @@ import java.util.Date;
 @Data
 public class BookWithUser {
     private Integer id;
+    private Integer bookid;
     private String isbn;
     private String bookName;
     private String nickName;

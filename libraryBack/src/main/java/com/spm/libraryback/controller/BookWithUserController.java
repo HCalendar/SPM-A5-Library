@@ -69,7 +69,8 @@ public class BookWithUserController {
     @PostMapping("/deleteRecord")
     public  Result<?> deleteRecord(@RequestBody BookWithUser BookWithUser){
         Map<String,Object> map = new HashMap<>();
-        map.put("isbn",BookWithUser.getIsbn());
+        map.put("bookid",BookWithUser.getBookid());
+        System.out.println(map.size());
         BookWithUserMapper.deleteByMap(map);
         return Result.success();
     }

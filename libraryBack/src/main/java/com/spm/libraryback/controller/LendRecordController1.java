@@ -24,7 +24,7 @@ public class LendRecordController1 {
     @PutMapping
     public  Result<?> update2( @RequestBody LendRecord lendRecord){
         UpdateWrapper<LendRecord> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.eq("isbn",lendRecord.getIsbn());
+        updateWrapper.eq("bookid",lendRecord.getBookid());
         LendRecord lendrecord = new LendRecord();
         lendrecord.setReturnTime(lendRecord.getReturnTime());
         lendrecord.setStatus(lendRecord.getStatus());

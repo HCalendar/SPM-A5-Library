@@ -8,10 +8,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.spm.libraryback.commom.Result;
 import com.spm.libraryback.entity.Book;
 import com.spm.libraryback.entity.BookWithUser;
-import com.spm.libraryback.entity.Star;
 import com.spm.libraryback.mapper.BookMapper;
 import com.spm.libraryback.mapper.BookWithUserMapper;
-import com.spm.libraryback.mapper.StarMapper;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -28,8 +26,6 @@ import java.util.TimeZone;
 public class BookController {
     @Resource
     BookMapper BookMapper;
-    @Resource
-    StarMapper starMapper;
     @Resource
     BookWithUserMapper bookWithUserMapper;
 
@@ -94,41 +90,12 @@ public class BookController {
         Page<Book> BookPage =BookMapper.selectPage(new Page<>(pageNum,pageSize), wrappers);
         return Result.success(BookPage);
     }
-    @GetMapping("/star")
-    public Result<?> starPage(@RequestParam(defaultValue = "1") Integer pageNum,
-                              @RequestParam(defaultValue = "10") Integer pageSize,
-                              @RequestParam(defaultValue = "") String search1,
-                              @RequestParam(defaultValue = "") String search2,
-                              @RequestParam(defaultValue = "") String search3){
-        LambdaQueryWrapper<Star> wrappers = Wrappers.<Star>lambdaQuery();
-        if(StringUtils.isNotBlank(search1)){
-            wrappers.like(Star::getIsbn,search1);
-        }
-        if(StringUtils.isNotBlank(search2)){
-            wrappers.like(Star::getTitle,search2);
-        }
-        Page<Star> starPage =starMapper.selectPage(new Page<>(pageNum,pageSize), wrappers);
-        return Result.success(starPage);
+    @GetMapping("/all")
+    public Result<?> getAll(){
+        return Result.success(BookMapper.selectAll());
     }
-    @PostMapping("/star")
-    public Result<?> star(@RequestBody Star star){
-        LambdaQueryWrapper<Star> wrappers = Wrappers.<Star>lambdaQuery();
-        wrappers.eq(Star::getUserId, star.getUserId());
-        wrappers.eq(Star::getBookId, star.getBookId());
-        if(starMapper.exists(wrappers)){
-            return Result.success(star);
-        }
-        starMapper.insert(star);
-        return Result.success(star);
-    }
-    @PostMapping("/star/cancel")
-    public Result<?> starCancel(@RequestBody Star star){
-        LambdaQueryWrapper<Star> wrappers = Wrappers.<Star>lambdaQuery();
-        wrappers.eq(Star::getUserId, star.getUserId());
-        wrappers.eq(Star::getBookId, star.getBookId());
-        starMapper.delete(wrappers);
-        return Result.success(star);
+    @GetMapping("/searchById")
+    public Result<?> getId(@RequestParam Integer id){
+        return Result.success(BookMapper.selectById(id));
     }
 }
-
-

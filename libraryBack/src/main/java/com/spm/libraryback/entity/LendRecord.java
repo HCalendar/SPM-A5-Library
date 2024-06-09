@@ -10,6 +10,7 @@ import java.util.Date;
 @Data
 public class LendRecord {
     private Integer readerId;
+    private Integer bookid;
     private String isbn;
     private String bookname;
     @JsonFormat(locale="zh",timezone="GMT+8", pattern="yyyy-MM-dd HH:mm:ss")
