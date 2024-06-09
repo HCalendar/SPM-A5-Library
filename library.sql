@@ -26,24 +26,19 @@ CREATE TABLE `book`  (
 -- ----------------------------
 -- Records of book
 -- ----------------------------
-INSERT INTO `book` VALUES (16, '00001', 'A Dream of Red Mansions', 58.00, 'Cao Xueqin', 'Electronic Industry Press', '2020-01-01', '1', 6,'B401 five A-side,column3,tiers1-3');
-INSERT INTO `book` VALUES (17, '00002', 'Journey to the West', 68.00, 'Wu Cheng''en', 'Beijing Institute of Technology Press', '2021-05-01', '0', 1,'B402 five B-side,column2,tiers1-6');
-INSERT INTO `book` VALUES (18, '00003', 'Water Margin', 72.00, 'Shi Nai''an', 'Changjiang Literary and Art Publishing House', '2022-03-01', '0', 1,'B403 four B-side,column1,tiers2-4');
-INSERT INTO `book` VALUES (19, '00004', 'The Great Gatsby', 19.99, 'F. Scott Fitzgerald', 'Scribner', '1925-01-01', '1', 1,'B404 two B-side,column2,tiers1-6');
-INSERT INTO `book` VALUES (20, '00005', 'To Kill a Mockingbird', 14.95, 'Harper Lee', 'J.B. Lippincott & Co.', '1960-01-01', '1', 0,'B405 five B-side,column2,tiers1-6');
-INSERT INTO `book` VALUES (21, '00006', 'Pride and Prejudice', 16.99, 'Jane Austen', 'Penguin Classics', '2020-07-01', '1', 0,'B406 four A-side,column3,tiers2-6');
-INSERT INTO `book` VALUES (22, '00007', 'Animal Farm', 11.99, 'George Orwell', 'Secker & Warburg', '2017-06-07', '1', 0,'B407 one B-side,column2,tiers1-6');
-INSERT INTO `book` VALUES (23, '00008', 'The Lord of the Rings', 29.99, 'J.R.R. Tolkien', 'Allen & Unwin', '2000-06-08', '1', 3,'B408 five A-side,column1,tiers3-5');
-INSERT INTO `book` VALUES (24, '00009', 'One Hundred Years of Solitude', 24.95, 'Gabriel García Márquez', 'Editorial Monte Ávila', '2023-07-04', '1', 0,'B409 five B-side,column2,tiers1-6');
-INSERT INTO `book` VALUES (25, '00010', 'The Catcher in the Rye', 17.95, 'J.D. Salinger', 'Little, Brown and Company', '2012-07-06', '1', 0,'B410 two B-side,column1,tiers5-6');
-INSERT INTO `book` VALUES (26, '12345', 'spm', 23.00, 'aaa', 'aaa', '2024-04-10', '0', 1,'B411 five A-side,column1,tiers3-6');
+insert into book (id, isbn, name, price, author, publisher, create_time, status, borrownum, location, like_num)
+values  (1, '9787115545138', 'Python数据可视化', 0.00, '黑马程序员编著', 'BEIJING BOOK CO. INC.', '2021-04-01', '0', 5, 'A333', 2),
+        (2, '9787115545138', 'Python数据可视化', 0.00, '黑马程序员编著', 'BEIJING BOOK CO. INC.', '2021-04-01', '1', 2, 'A333', 1),
+        (3, '9787115545222', '人像摄影师必会的99个技巧 王艺萌', 0.00, '王艺萌', '人民邮电出版社', '2020-11', '0', 4, 'A444', 2),
+        (4, '9787115545444', '智能时代下的创新创业实践', 0.00, '黄彦辉著', 'BEIJING BOOK CO. INC.', '2020-10-01', '1', 0, 'A555', 0),
+        (5, '9787115545555', '残疾人游泳指导教程', 0.00, '', '人民邮电出版社', '', '0', 2, 'A222', 0),
+        (6, '9787115545138', 'Python', 0.00, '黑马程序员编著', 'BEIJING BOOK CO. INC.', '2021-04-02', '1', 0, 'A234', 0);
 -- ----------------------------
 -- Table structure for bookwithuser
 -- ----------------------------
 DROP TABLE IF EXISTS `bookwithuser`;
 CREATE TABLE `bookwithuser`  (
                                  `id` bigint(0) NOT NULL COMMENT '读者id',
-                                 `bookid` int not null comment '图书id',
                                  `isbn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '图书编号',
                                  `book_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图书名',
                                  `nick_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '读者姓名',
@@ -51,16 +46,17 @@ CREATE TABLE `bookwithuser`  (
                                  `deadtime` datetime(0) NULL DEFAULT NULL COMMENT '应归还时间',
                                  `prolong` int(0) NULL DEFAULT NULL COMMENT '续借次数',
                                  PRIMARY KEY (`book_name`) USING BTREE,
-                                 INDEX `id`(`id`) USING BTREE
+                                 INDEX `id`(`id`) USING BTREE,
+                                 `bookid` int not null comment '图书id'
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of bookwithuser
 -- ----------------------------
-INSERT INTO `bookwithuser` VALUES (21, '00002', 'Journey to the West', 'bbb', '2024-04-21 18:48:07', '2024-05-21 18:48:07', 2);
-INSERT INTO `bookwithuser` VALUES (22, '12345', 'spm', 'aaaa', '2024-04-23 14:43:27', '2024-05-23 14:43:27', 1);
-INSERT INTO `bookwithuser` VALUES (20, '00003', 'Water Margin', 'aaa', '2024-04-22 22:26:34', '2024-04-22 22:27:34', 1);
-
+insert into bookwithuser (id, isbn, book_name, nick_name, lendtime, deadtime, prolong, bookid)
+values  (3, '9787115545555', '残疾人游泳指导教程', 'bbb', '2024-06-09 10:16:16', '2024-09-07 10:16:16', 1, 5),
+        (2, '9787115545138', 'Python数据可视化', 'aaa', '2024-05-01 10:20:24', '2024-06-10 10:24:56', 1, 1),
+        (2, '9787115545222', '人像摄影师必会的99个技巧 王艺萌', 'aaa', '2024-06-09 10:33:31', '2024-07-09 10:33:31', 1, 3);
 -- ----------------------------
 -- Table structure for lend_record
 -- ----------------------------
@@ -79,13 +75,18 @@ CREATE TABLE `lend_record`  (
 -- ----------------------------
 -- Records of lend_record
 -- ----------------------------
-INSERT INTO `lend_record` VALUES (21, '00001', 'A Dream of Red Mansions', '2024-04-21 18:09:02', '2024-04-21 18:11:15', '1', 3);
-INSERT INTO `lend_record` VALUES (21, '00002', 'Journey to the West', '2024-04-21 18:48:07', NULL, '0', 1);
-INSERT INTO `lend_record` VALUES (20, '00001', 'A Dream of Red Mansions', '2024-04-22 22:18:46', '2024-04-22 22:18:49', '1', 4);
-INSERT INTO `lend_record` VALUES (20, '00004', 'The Great Gatsby', '2024-04-22 22:21:37', '2024-04-22 22:26:28', '1', 1);
-INSERT INTO `lend_record` VALUES (20, '00003', 'Water Margin', '2024-04-22 22:26:34', NULL, '0', 1);
-INSERT INTO `lend_record` VALUES (22, '00001', 'A Dream of Red Mansions', '2024-04-23 14:39:31', '2024-04-23 14:41:01', '1', 5);
-INSERT INTO `lend_record` VALUES (22, '12345', 'spm', '2024-04-23 14:43:27', NULL, '0', 1);
+insert into lend_record (reader_id, isbn, bookname, lend_time, return_time, status, borrownum, bookid)
+values  (2, '9787115545138', 'Python数据可视化', '2024-06-08 23:33:33', '2024-06-10 10:14:36', '1', 2, 1),
+        (2, '9787115545138', 'Python数据可视化', '2024-06-09 09:26:05', '2024-06-10 10:14:36', '1', 3, 1),
+        (3, '9787115545222', '人像摄影师必会的99个技巧 王艺萌', '2024-06-09 10:04:32', '2024-06-09 10:33:20', '1', 1, 3),
+        (3, '9787115545555', '残疾人游泳指导教程', '2024-06-09 10:05:42', '2024-06-09 10:12:57', '1', 1, 5),
+        (3, '9787115545138', 'Python数据可视化', '2024-06-09 10:13:26', '2024-06-10 10:14:36', '1', 4, 1),
+        (3, '9787115545138', 'Python数据可视化', '2024-06-09 10:13:27', '2024-06-09 10:15:05', '1', 2, 2),
+        (3, '9787115545222', '人像摄影师必会的99个技巧 王艺萌', '2024-06-09 10:13:28', '2024-06-09 10:33:20', '1', 2, 3),
+        (3, '9787115545555', '残疾人游泳指导教程', '2024-06-09 10:16:16', null, '0', 2, 5),
+        (2, '9787115545138', 'Python数据可视化', '2024-06-09 10:20:24', null, '0', 5, 1),
+        (2, '9787115545222', '人像摄影师必会的99个技巧 王艺萌', '2024-06-09 10:31:33', '2024-06-09 10:33:20', '1', 3, 3),
+        (2, '9787115545222', '人像摄影师必会的99个技巧 王艺萌', '2024-06-09 10:33:31', null, '0', 4, 3);
 
 -- ----------------------------
 -- Table structure for user
@@ -106,9 +107,11 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (19, 'hy', '12345', 'Han Yu', '18264109812', '女', 'Xidian', 1);
-INSERT INTO `user` VALUES (20, 'aaa', 'aaaaa', 'Andy', '1234567890', '男', 'Beijing', 2);
-INSERT INTO `user` VALUES (21, 'bbb', 'bbbbb', NULL, NULL, NULL, NULL, 2);
+insert into library.user (id, username, password, nick_name, phone, sex, address, role)
+values  (1, 'hy', '12345', 'Han Yu', '18264109812', '女', 'Xidian', 1),
+        (2, 'aaa', 'aaaaa', 'AAA', '1234567890', 'Male', 'Xi''an', 2),
+        (3, 'bbb', 'bbbbb', 'BBB', '1234567809', 'Female', 'BeiJing', 2),
+        (4, 'ccc', 'ccccc', null, null, null, null, 1);
 
 DROP TABLE IF EXISTS `comments`;
 CREATE TABLE comments (
