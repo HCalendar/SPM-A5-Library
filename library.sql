@@ -19,6 +19,7 @@ CREATE TABLE `book`  (
                          `status` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '0：未归还 1：已归还',
                          `borrownum` int(0) NOT NULL COMMENT '此书被借阅次数',
                          `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '图书存放地点',
+                         `like_num` int DEFAULT 0 COMMENT '此书被收藏次数',
                          PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = Dynamic;
 
@@ -42,6 +43,7 @@ INSERT INTO `book` VALUES (26, '12345', 'spm', 23.00, 'aaa', 'aaa', '2024-04-10'
 DROP TABLE IF EXISTS `bookwithuser`;
 CREATE TABLE `bookwithuser`  (
                                  `id` bigint(0) NOT NULL COMMENT '读者id',
+                                 `bookid` int not null comment '图书id',
                                  `isbn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '图书编号',
                                  `book_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图书名',
                                  `nick_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '读者姓名',
@@ -64,6 +66,7 @@ INSERT INTO `bookwithuser` VALUES (20, '00003', 'Water Margin', 'aaa', '2024-04-
 -- ----------------------------
 DROP TABLE IF EXISTS `lend_record`;
 CREATE TABLE `lend_record`  (
+                                `bookid` int not null comment '图书id',
                                 `reader_id` bigint(0) NOT NULL COMMENT '读者id',
                                 `isbn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '图书编号',
                                 `bookname` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '图书名',
@@ -125,5 +128,31 @@ CREATE TABLE feedback (
     adminname char(255) ,
     backcontent TEXT
 );
+
+DROP TABLE IF EXISTS `like`;
+CREATE TABLE `like` (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    userid BIGINT NOT NULL,
+    bookid BIGINT NOT NULL
+);
+
+DELIMITER //
+CREATE TRIGGER after_like_delete
+    AFTER DELETE ON `like`
+    FOR EACH ROW
+BEGIN
+    UPDATE book SET like_num = like_num - 1 WHERE id = OLD.bookid;
+END;
+//
+DELIMITER ;
+DELIMITER //
+CREATE TRIGGER after_like_insert
+    AFTER INSERT ON `like`
+    FOR EACH ROW
+BEGIN
+    UPDATE book SET like_num = like_num + 1 WHERE id = NEW.bookid;
+END;
+//
+DELIMITER ;
 
 SET FOREIGN_KEY_CHECKS = 1;
