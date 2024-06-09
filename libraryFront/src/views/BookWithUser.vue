@@ -39,17 +39,13 @@
         </template>
       </el-popconfirm>
     </div>
-    <div v-if="this.user.role===1">
-      <el-input style="width: 70%;" v-model="isbns"  placeholder="Please enter ISBNs of books seperated by ';'"  clearable>
-      </el-input>
-      <el-button type="primary" size="mini" style="margin-left: 5px;" @click="isbnReturn">Return by ISBNs</el-button>
-    </div>
     <!-- 数据字段-->
     <el-table :data="tableData" stripe border="true" @selection-change="handleSelectionChange" style="margin-top: 10px;">
       <el-table-column v-if="user.role ==1"
           type="selection"
           width="55">
       </el-table-column>
+      <el-table-column prop="bookid" width="50" label="ID" />
       <el-table-column prop="isbn" label="ISBN" sortable />
       <el-table-column prop="bookName" label="Title" />
       <el-table-column prop="nickName" label="Borrower" v-if="user.role==1"/>
@@ -60,7 +56,7 @@
       <el-table-column fixed="right" label="Options" >
         <template v-slot="scope">
           <el-button  size="mini" @click ="handleEdit(scope.row)" v-if="user.role == 1">Modify</el-button>
-          <el-popconfirm title="Please confirm to return" @confirm="handlereturn(scope.row.isbn)" v-if="user.role == 1">
+          <el-popconfirm title="Please confirm to return" @confirm="handlereturn(scope.row.bookid)" v-if="user.role == 1">
             <template #reference>
               <el-button type="primary" size="mini">Return</el-button>
             </template>
@@ -151,38 +147,14 @@ export default {
         }
       })
     },
-    isbnReturn(){
-      if(!this.isbns.length){
-        ElMessage.warning("Please enter one at least")
-        return
-      }
-      this.isbn=this.isbns.split(';')
-      for(let i=0;i<this.isbn.length;i++){
-        this.handlereturn(this.isbn[i])
-      }
-      this.isbns=""
-    },
-    returnBatch(){
-      if (!this.forms.length) {
-        ElMessage.warning("Please choose one at least")
-        return
-      }
-      for(let i=0;i<this.forms.length;i++){
-        this.handlereturn(this.forms[i].isbn)
-      }
-    },
-    async handlereturn(isbn){
-      const res=await request.get("http://localhost:8181/book",{
+    async handlereturn(bookid){
+      const res=await request.get("http://localhost:8181/book/searchById",{
         params:{
-          pageNum: this.currentPage,
-          pageSize: this.pageSize,
-          search1: isbn,
-          search2: "",
-          search3: "",
+          id:bookid
         }
       })
       console.log(res)
-      this.form = res.data.records[0]
+      this.form = res.data
       this.form.status = "1"
       request.put("http://localhost:8181/book",this.form).then(res =>{
         console.log(res)
@@ -196,20 +168,22 @@ export default {
           ElMessage.error(res.msg)
         }
         //
-        this.form3.isbn = isbn
+        this.form3.isbn = this.form.isbn
         let endDate = moment(new Date()).format("yyyy-MM-DD HH:mm:ss")
         this.form3.returnTime = endDate
         this.form3.status = "1"
         this.form3.borrownum = this.form.borrownum
+        this.form3.bookid=bookid
         request.put("http://localhost:8181/LendRecord1/",this.form3).then(res =>{
           console.log(res)
           let form3 ={};
-          form3.isbn = isbn;
+          form3.isbn = this.form.isbn;
           form3.bookName = name;
           form3.id = this.user.id;
           form3.lendtime = endDate;
           form3.deadtime = endDate;
           form3.prolong  = 1;
+          form3.bookid=bookid;
           console.log(form3)
           request.post("http://localhost:8181/bookwithuser/deleteRecord",form3).then(res =>{
             console.log(res)
@@ -239,6 +213,11 @@ export default {
       //   console.log(res)
       //   this.load()
       // })
+    },
+    returnBatch(){
+      for(let i=0;i<this.forms.length;i++){
+        this.handlereturn(this.forms[i].bookid)
+      }
     },
     load(){
       if(this.user.role == 1){

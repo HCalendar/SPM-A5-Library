@@ -11,11 +11,17 @@
       router
       background-color="#30333c" text-color="#fff"
   >
+    <el-menu-item index="/Welcome" >
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#el-icon-house "></use>
+      </svg>
+      <span>Welcome</span>
+    </el-menu-item>
     <el-menu-item index="/dashboard" >
       <svg class="icon" aria-hidden="true">
         <use xlink:href="#icondashboard "></use>
       </svg>
-      <span>Welcome</span>
+      <span>Dashboard</span>
     </el-menu-item>
     <el-sub-menu index="2" text-color="#fff">
       <template #title>
@@ -71,9 +77,9 @@
       <el-icon><grid /></el-icon>
       <span>Borrow Status</span>
     </el-menu-item>
-    <el-menu-item index="/favorites" v-if="user.role == 2">
-      <el-icon><takeaway-box /></el-icon>
-      <span>My Favorites</span>
+    <el-menu-item index="/like" v-if="user.role !== 1">
+      <StarFilled class="icon"></StarFilled>
+      <span>Your Like</span>
     </el-menu-item>
     <div class="bottom-button">
       <el-button type="text" class="button" @click="$router.push('/feedback')" >Feedback</el-button>
@@ -87,10 +93,12 @@
 
 
 
+import {StarFilled} from "@element-plus/icons-vue";
+
 export default {
   // eslint-disable-next-line vue/multi-word-component-names
   name: "Aside",
-  components:{},
+  components:{StarFilled},
   created(){
     let userStr = sessionStorage.getItem("user") ||"{}"
     this.user = JSON.parse(userStr)

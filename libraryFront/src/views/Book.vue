@@ -51,22 +51,28 @@
           <el-button type="danger" size="mini" >Batch Delete</el-button>
         </template>
       </el-popconfirm>
-
     </div>
     <!-- 数据字段-->
     <el-table :data="tableData" stripe border="true" @selection-change="handleSelectionChange">
-      <el-table-column v-if="user.role ==1"
+      <el-table-column v-if="user.role === 1"
                        type="selection"
-                       width="55">
+                       width="45">
+      </el-table-column>
+      <el-table-column prop="id" width="45" label="ID" />
+      <el-table-column v-if="user.role === 1" prop="likeNum" width="80" label="LikeNum" />
+      <el-table-column fixed="left" prop="isLike" label="Like" width="55" v-if="user.role !==1">
+        <template v-slot="scope">
+          <star-filled v-if="scope.row.isLike===true" color="yellow" @click="onLike(scope.row)"></star-filled>
+          <star v-if="scope.row.isLike===false" color="yellow" class="el-icon-star-on" @click="onLike(scope.row)"></star>
+        </template>
       </el-table-column>
       <el-table-column prop="isbn" label="ISBN" sortable />
       <el-table-column prop="name" label="Title" />
-      <!--<el-table-column prop="price" label="Price" sortable/>-->
       <el-table-column prop="author" label="Author" />
       <el-table-column prop="publisher" label="Publisher" />
       <el-table-column prop="createTime" label="PublicationTime" sortable/>
 
-      <el-table-column prop="location" label="Location" />
+      <el-table-column prop="location" width="80" label="Location" />
 
       <el-table-column prop="status" label="Status">
         <template v-slot="scope">
@@ -75,7 +81,8 @@
         </template>
       </el-table-column>
 
-      <el-table-column fixed="right" label="Options" >
+
+      <el-table-column fixed="right" label="Options">
         <template v-slot="scope">
           <el-button  size="mini" @click ="handleEdit(scope.row)" v-if="user.role == 1">Modify</el-button>
           <el-popconfirm title="Please confirm to delete." @confirm="handleDelete(scope.row.id)" v-if="user.role == 1">
@@ -84,9 +91,7 @@
             </template>
           </el-popconfirm>
           <el-button size="mini" @click ="handlelend(scope.row.id,scope.row.isbn,scope.row.name,scope.row.borrownum)" v-if="user.role == 2" :disabled="scope.row.status == 0||numOfOutDataBook!=0">Borrow</el-button>
-          <el-button type="primary" size="mini" @click="$router.push('/comment/'+scope.row.name+'/'+scope.row.isbn)">View Comments</el-button>
-          <el-button :type="buttonType" @click="toggleFavorite" size="mini">{{ buttonText }}</el-button>
-
+          <el-button type="primary" size="mini" @click="$router.push('/comment/'+scope.row.name+'/'+scope.row.isbn)">Comments</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -196,163 +201,144 @@
 import request from "../utils/request";
 import {ElMessage} from "element-plus";
 import moment from "moment";
+import {StarFilled} from "@element-plus/icons-vue";
 export default {
-  props: {
-    book: Object // 传入的图书对象
-  },
-  created() {
-    let userStr = sessionStorage.getItem("user") || "{}"
+  components: {StarFilled},
+  created(){
+    let userStr = sessionStorage.getItem("user") ||"{}"
     this.user = JSON.parse(userStr)
     this.calculate()
     this.load()
   },
   name: 'LBook',
   methods: {
-    // (this.isbnArray.indexOf(scope.row.isbn)) == -1
-    toggleFavorite(isbn) {
-      this.isBookFavorite = !this.isBookFavorite;
-
-      if (this.isBookFavorite) {
-        request.get("http://localhost:8181/book", {
-          params: {
-            pageNum: this.currentPage,
-            pageSize: this.pageSize,
-            search1: this.search1,
-            search2: this.search2,
-            search3: this.search3,
-          }
-        }).then(res => {
-          console.log(res)
-          this.tableData = res.data.records
-          this.total = res.data.total
-
-          this.buttonType = 'success';
-          this.buttonText = 'add to favorite';
-          // 将图书信息添加到收藏中
-          this.favoriteBooks.push(isbn);
-        }).catch(error => {
-          console.error(error);
-        });
-      } else {
-        this.buttonType = 'warning';
-        this.buttonText = 'remove from favorite';
-
-        // 从收藏中移除图书信息
-        const index = this.favoriteBooks.findIndex(book => book.isbn === isbn);
-        if (index !== -1) {
-          this.favoriteBooks.splice(index, 1);
-        }
-      }
+  // (this.isbnArray.indexOf(scope.row.isbn)) == -1
+    handleSelectionChange(val){
+      this.ids = val.map(v =>v.id)
     },
-
-    handleSelectionChange(val)
-    {
-      this.ids = val.map(v => v.id)
-    },
-
-    deleteBatch() {
+    deleteBatch(){
       if (!this.ids.length) {
         ElMessage.warning("Please choose one at least!")
         return
       }
       //  一个小优化，直接发送这个数组，而不是一个一个的提交删除
-      request.post("http://localhost:8181/book/deleteBatch", this.ids).then(res => {
-        if (res.code === '0') {
+      request.post("http://localhost:8181/book/deleteBatch",this.ids).then(res =>{
+        if(res.code === '0'){
           ElMessage.success("Successfully batch delete!")
           this.load()
-        } else {
+        }
+        else {
           ElMessage.error(res.msg)
         }
       })
     },
-    load() {
-      this.numOfOutDataBook = 0;
-      this.outDateBook = [];
-      request.get("http://localhost:8181/book", {
-        params: {
+    load(){
+      this.numOfOutDataBook =0;
+      this.outDateBook =[];
+      request.get("http://localhost:8181/book",{
+        params:{
           pageNum: this.currentPage,
           pageSize: this.pageSize,
           search1: this.search1,
           search2: this.search2,
           search3: this.search3,
         }
-      }).then(res => {
+      }).then(res =>{
         console.log(res)
         this.tableData = res.data.records
         this.total = res.data.total
+        request.get("http://localhost:8181/like",{
+          params:{
+            userid:this.user.id
+          }
+        }).then(res=>{
+          console.log(res)
+          for(let i=0;i<this.tableData.length;i++){
+            this.tableData[i].isLike=false
+          }
+          res.forEach(item => {
+            for (let i = 0; i < this.tableData.length; i++) {
+              if (this.tableData[i].id === item.bookid) {
+                this.tableData[i].isLike = true;
+                break;
+              }
+            }
+          })
+        })
       })
-      //
-      if (this.user.role == 2) {
-        request.get("http://localhost:8181/bookwithuser", {
-          params: {
+    //
+      if(this.user.role == 2){
+        request.get("http://localhost:8181/bookwithuser",{
+          params:{
             pageNum: "1",
             pageSize: this.total,
             search1: "",
             search2: "",
             search3: this.user.id,
           }
-        }).then(res => {
+        }).then(res =>{
           console.log(res)
           this.bookData = res.data.records
           this.number = this.bookData.length;
           var nowDate = new Date();
-          for (let i = 0; i < this.number; i++) {
+          for(let i=0; i< this.number; i++){
             this.isbnArray[i] = this.bookData[i].isbn;
             let dDate = new Date(this.bookData[i].deadtime);
-            if (dDate < nowDate) {
+            if(dDate < nowDate){
               this.outDateBook[this.numOfOutDataBook] = {
-                isbn: this.bookData[i].isbn,
-                bookName: this.bookData[i].bookName,
-                deadtime: this.bookData[i].deadtime,
-                lendtime: this.bookData[i].lendtime,
+                isbn:this.bookData[i].isbn,
+                bookName : this.bookData[i].bookName,
+                deadtime : this.bookData[i].deadtime,
+                lendtime : this.bookData[i].lendtime,
               };
               this.numOfOutDataBook = this.numOfOutDataBook + 1;
             }
           }
-          console.log("in load():" + this.numOfOutDataBook);
+          console.log("in load():" +this.numOfOutDataBook );
         })
       }
       //
     },
-    clear() {
+    clear(){
       this.search1 = ""
       this.search2 = ""
       this.search3 = ""
       this.load()
     },
-    handleDelete(id) {
-      request.delete("http://localhost:8181/book/" + id).then(res => {
+    handleDelete(id){
+      request.delete("http://localhost:8181/book/" + id ).then(res =>{
         console.log(res)
-        if (res.code == 0) {
+        if(res.code == 0 ){
           ElMessage.success("Successfully delete!")
-        } else
+        }
+        else
           ElMessage.error(res.msg)
         this.load()
 
       })
     },
-
-    handlelend(id, isbn, name, bn) {
-      if (this.number == 5) {
+    handlelend(id,isbn,name,bn){
+      if(this.number ==5){
         ElMessage.warning("You cannot borrow more books!")
         return;
       }
-      if (this.numOfOutDataBook != 0) {
+      if(this.numOfOutDataBook !=0){
         ElMessage.warning("You cannot borrow more books before your return the book overdue!")
         return;
       }
       this.form.status = "0"
       this.form.id = id
-      this.form.borrownum = bn + 1
+      this.form.borrownum = bn+1
       console.log(bn)
-      request.put("http://localhost:8181/book", this.form).then(res => {
+      request.put("http://localhost:8181/book",this.form).then(res =>{
         console.log(res)
-        if (res.code == 0) {
+        if(res.code == 0){
           ElMessage({
             message: 'Successfully borrow!',
             type: 'success',
           })
-        } else {
+        }
+        else {
           ElMessage.error(res.msg)
         }
       })
@@ -360,72 +346,76 @@ export default {
       this.form2.isbn = isbn
       this.form2.bookname = name
       this.form2.readerId = this.user.id
-      this.form2.borrownum = bn + 1
+      this.form2.borrownum = bn+1
+      this.form2.bookid = id
       console.log(this.form2.borrownum)
       console.log(this.user)
       let startDate = moment(new Date()).format("yyyy-MM-DD HH:mm:ss");
       this.form2.lendTime = startDate
       console.log(this.user)
-      request.post("http://localhost:8181/LendRecord", this.form2).then(res => {
+      request.post("http://localhost:8181/LendRecord",this.form2).then(res =>{
         console.log(res)
         this.load();
 
       })
-      let form3 = {};
+      let form3 ={};
       form3.isbn = isbn;
       form3.bookName = name;
       form3.nickName = this.user.username;
       form3.id = this.user.id;
       form3.lendtime = startDate;
+      form3.bookid = id;
       let nowDate = new Date(startDate);
-      nowDate.setDate(nowDate.getDate() + 30);
+      nowDate.setDate(nowDate.getDate()+30);
       form3.deadtime = moment(nowDate).format("yyyy-MM-DD HH:mm:ss");
-      form3.prolong = 1;
-      request.post("http://localhost:8181/bookwithuser/insertNew", form3).then(res => {
+      form3.prolong  = 1;
+      request.post("http://localhost:8181/bookwithuser/insertNew",form3).then(res =>{
         console.log(res)
         this.load()
       })
     },
-    add() {
-      this.dialogVisible = true
-      this.form = {}
+    add(){
+      this.dialogVisible= true
+      this.form ={}
     },
-    async save() {
+    async save(){
       //ES6语法
       //地址,但是？IP与端口？+请求参数
       // this.form?这是自动保存在form中的，虽然显示时没有使用，但是这个对象中是有它的
-      if (this.form.id) {
-        request.put("http://localhost:8181/book", this.form).then(res => {
+      if(this.form.id){
+        request.put("http://localhost:8181/book",this.form).then(res =>{
           console.log(res)
-          if (res.code == 0) {
+          if(res.code == 0){
             ElMessage({
               message: 'Successfully modify!',
               type: 'success',
             })
-          } else {
+          }
+          else {
             ElMessage.error(res.msg)
           }
 
           this.load()
           this.dialogVisible2 = false
         })
-      } else {
+      }
+      else {
         this.form.borrownum = 0
         this.form.status = 1
-        this.isbn = this.isbns.split(';')
-        this.wrongAdd = []
-        for (let i = 0; i < this.isbn.length; i++) {
-          const res = await request.get('https://apis.5share.site/books/?isbn=' + this.isbn[i])
+        this.isbn=this.isbns.split(';')
+        this.wrongAdd=[]
+        for(let i=0;i<this.isbn.length;i++){
+          const res=await request.get('https://apis.5share.site/books/?isbn=' + this.isbn[i])
           console.log(res)
-          if (res.ret == true) {
-            const bookInfo = res.info
-            this.form.isbn = this.isbn[i]
-            this.form.name = bookInfo.name
-            this.form.price = 0
-            this.form.author = bookInfo.authors
-            this.form.publisher = bookInfo.publisher
-            this.form.createTime = bookInfo.publishedDate
-            const saveRes = request.post("http://localhost:8181/book", this.form)
+          if(res.ret == true){
+            const bookInfo=res.info
+            this.form.isbn=this.isbn[i]
+            this.form.name=bookInfo.name
+            this.form.price=0
+            this.form.author=bookInfo.authors
+            this.form.publisher=bookInfo.publisher
+            this.form.createTime=bookInfo.publishedDate
+            const saveRes=request.post("http://localhost:8181/book",this.form)
             console.log(saveRes)
           }
           /*if(res.code == 1){
@@ -441,90 +431,120 @@ export default {
             const saveRes=request.post("http://localhost:8181/book",this.form)
             console.log(saveRes)
           }*/
-          else {
+          else{
             this.wrongAdd.push(this.isbn[i])
           }
         }
         this.dialogVisible = false
-        this.dialogVisible4 = true
         this.load()
+        this.dialogVisible4 = true
       }
-      window.location.reload()
     },
     // formatter(row) {:formatter="formatter"
     //   return row.address
     // },
 
-    handleEdit(row) {
+    handleEdit(row){
       this.form = JSON.parse(JSON.stringify(row))
       this.dialogVisible2 = true
     },
-    handleSizeChange(pageSize) {
+    handleSizeChange(pageSize){
       this.pageSize = pageSize
       this.load()
     },
-    handleCurrentChange(pageNum) {
+    handleCurrentChange(pageNum){
       this.pageNum = pageNum
       this.load()
     },
-    toLook() {
-      this.dialogVisible3 = true;
+    toLook(){
+      this.dialogVisible3 =true;
     },
-    calculate() {
-      request.get("http://localhost:8181/bookwithuser", {
-        params: {
-          pageNum: this.currentPage,
-          pageSize: this.pageSize,
-          search1: this.search1,
-          search2: this.search2,
-          search3: this.search3,
-        }
-      }).then(res => {
-        console.log(res)
-        this.tableData = res.data.records
-        this.total = res.data.total
-        this.tableData.forEach(item => {
-          const currentTime = new Date()
-          const deadline = new Date(item.deadtime)
-          const diffInMilliseconds = Math.abs(deadline - currentTime)
-          const remainTime = Math.ceil(diffInMilliseconds / (1000 * 60 * 60 * 24))
-          this.money = remainTime * 1
-          this.penaltyid = item.id
+    calculate(){
+        request.get("http://localhost:8181/bookwithuser",{
+          params:{
+            pageNum: this.currentPage,
+            pageSize: this.pageSize,
+            search1: this.search1,
+            search2: this.search2,
+            search3: this.search3,
+          }
+        }).then(res =>{
+          console.log(res)
+          this.tableData = res.data.records
+          this.total = res.data.total
+          this.tableData.forEach(item=>{
+            const currentTime=new Date()
+            const deadline=new Date(item.deadtime)
+            const diffInMilliseconds = Math.abs(deadline-currentTime)
+            const remainTime = Math.ceil(diffInMilliseconds / (1000 * 60 * 60 * 24))
+            this.money=remainTime*1
+            this.penaltyid=item.id
+          })
         })
-      })
+    },
+    onLike(row){
+      row.isLike=!row.isLike
+      this.like.bookid=row.id
+      this.like.userid=this.user.id
+      if(row.isLike){
+        request.post("http://localhost:8181/like/save",this.like).then(res=>{
+          console.log(res)
+          if(res.code == 0){
+            ElMessage({
+              message: 'Successfully like!',
+              type: 'success',
+            })
+          }
+          else{
+            ElMessage.error()
+          }
+        })
+      }
+      else{
+        request.post("http://localhost:8181/like/delete",this.like).then(res=>{
+          console.log(res)
+          if(res.code == 0){
+            ElMessage({
+              message: 'Successfully cancel like!',
+              type: 'success',
+            })
+          }
+          else{
+            ElMessage.error()
+          }
+        })
+      }
     }
   },
   data() {
     return {
-      buttonType: 'success',
-      buttonText: 'add to favorite',
-      isBookFavorite: false,
       form: {},
-      form2: {},
-      form3: {},
+      form2:{},
+      form3:{},
       dialogVisible: false,
       dialogVisible2: false,
-      search1: '',
-      search2: '',
-      search3: '',
-      total: 10,
-      currentPage: 1,
+      search1:'',
+      search2:'',
+      search3:'',
+      total:10,
+      currentPage:1,
       pageSize: 10,
       tableData: [],
-      user: {},
-      number: 0,
-      bookData: [],
-      isbnArray: [],
-      outDateBook: [],
+      user:{},
+      number:0,
+      bookData:[],
+      isbnArray:[],
+      outDateBook:[],
       numOfOutDataBook: 0,
-      dialogVisible3: true,
+      dialogVisible3 : true,
       dialogVisible4: false,
       currentBookId: null,
-      money: 0,
-      penaltyid: "",
-      isbns: "",
-      isbn: [],
-      wrongAdd: []
+      money:0,
+      penaltyid:"",
+      isbns:"",
+      isbn:[],
+      wrongAdd:[],
+      like:{}
     }
   },
 }

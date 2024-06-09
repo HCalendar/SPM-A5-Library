@@ -43,6 +43,7 @@
                        type="selection"
                        width="55">
       </el-table-column>
+      <el-table-column prop="bookid" width="50" label="ID" />
       <el-table-column prop="isbn" label="ISBN" sortable />
       <el-table-column prop="bookname" label="Title" />
       <el-table-column v-if="user.role === 1" prop="readerId" label="Patron ID" sortable/>
@@ -108,7 +109,7 @@
         <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="save(form.isbn)">Save</el-button>
+        <el-button type="primary" @click="save(form.bookid)">Save</el-button>
       </span>
         </template>
       </el-dialog>
@@ -171,12 +172,12 @@ export default defineComponent({
         }
       })
     },
-    save(isbn){
+    save(bookid){
       //ES6语法
       //地址,但是？IP与端口？+请求参数
       // this.form?这是自动保存在form中的，虽然显示时没有使用，但是这个对象中是有它的
       if(this.form.isbn){
-        request.post("http://localhost:8181/LendRecord" + isbn, this.form).then(res => {
+        request.put("http://localhost:8181/LendRecord" + bookid, this.form).then(res => {
           console.log(res)
           if (res.code == 0) {
             ElMessage({
@@ -192,7 +193,7 @@ export default defineComponent({
         })
       }
       else {
-        request.put("http://localhost:8181/LendRecord/" + isbn, this.form).then(res => {
+        request.put("http://localhost:8181/LendRecord/" + bookid, this.form).then(res => {
           console.log(res)
           if (res.code == 0) {
             ElMessage({

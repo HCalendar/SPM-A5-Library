@@ -88,7 +88,7 @@ export default {
             if (res.code == 0) {
               ElMessage.success("Successfully Login!")
               sessionStorage.setItem("user",JSON.stringify(res.data))//缓存用户信息
-              this.$router.push("/dashboard")
+              this.$router.push("/welcome")
             } else {
               ElMessage.error(res.msg)
             }

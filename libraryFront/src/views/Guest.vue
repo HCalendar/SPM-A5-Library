@@ -37,7 +37,6 @@
           <el-table :data="tableData" stripe border="true" @selection-change="handleSelectionChange">
             <el-table-column prop="isbn" label="ISBN" sortable />
             <el-table-column prop="name" label="Title" />
-            <el-table-column prop="price" label="Price" sortable/>
             <el-table-column prop="author" label="Author" />
             <el-table-column prop="publisher" label="Publisher" />
             <el-table-column prop="createTime" label="Publication Time" sortable/>

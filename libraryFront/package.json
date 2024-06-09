@@ -9,12 +9,11 @@
   },
   "dependencies": {
     "@element-plus/icons": "^0.0.11",
-    "@sideway/formula": "^3.0.1",
+    "@element-plus/icons-vue": "^2.3.1",
     "axios": "^0.24.0",
     "core-js": "^3.8.3",
     "echarts": "^5.5.0",
     "element-plus": "^1.2.0-beta.4",
-    "is-stream": "^4.0.1",
     "moment": "^2.30.1",
     "vue": "^3.2.13",
     "vue-router": "^4.0.0-0",

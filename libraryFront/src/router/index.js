@@ -39,14 +39,19 @@ const routes = [
         component:() => import("@/views/Dashboard")
       },
       {
-        path: 'favorites',
-        name: 'Favorites',
-        component: () => import("@/views/Favorites")
+        path:'welcome',
+        name:'Welcome',
+        component:()=>import("@/views/Welcome")
       },
       {
         path: 'bookwithuser',
         name: 'BookWithUser',
         component: () => import("@/views/BookWithUser")
+      },
+      {
+        path:'like',
+        name:'Like',
+        component: ()=>import("@/views/Like")
       }
     ]
   },
@@ -79,13 +84,7 @@ const routes = [
     path: '/feedback',
     name: 'Feedback',
     component: ()=>import("@/views/Feedback")
-  },
-  {
-    path:'/bookTest',
-    name:'BookTest',
-    component: ()=>import("@/views/BookTest")
   }
-
 ]
 
 const router = createRouter({
